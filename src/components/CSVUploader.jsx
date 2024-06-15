@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Button, Input, Table, Thead, Tbody, Tr, Th, Td, IconButton } from '@chakra-ui/react';
+import { Box, Heading, Button, Input, Table, Thead, Tbody, Tr, Th, Td, IconButton, useToast } from '@chakra-ui/react';
 import { FaTrash, FaDownload } from 'react-icons/fa';
 import Papa from 'papaparse';
 
 const CSVUploader = () => {
   const [data, setData] = useState([]);
   const [headers, setHeaders] = useState([]);
+  const toast = useToast();
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -13,6 +14,13 @@ const CSVUploader = () => {
       complete: (result) => {
         setHeaders(result.data[0]);
         setData(result.data.slice(1));
+        toast({
+          title: "File uploaded successfully.",
+          description: `Parsed ${result.data.length - 1} rows.`,
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
       },
       header: false,
     });
@@ -44,7 +52,8 @@ const CSVUploader = () => {
   };
 
   return (
-    <div>
+    <Box p={4} boxShadow="md" borderRadius="md" bg="white">
+      <Heading as="h2" size="lg" mb={4}>CSV Upload and Edit Tool</Heading>
       <Input type="file" accept=".csv" onChange={handleFileUpload} mb={4} />
       <Button onClick={handleAddRow} mb={4}>Add Row</Button>
       <Table variant="simple">
@@ -72,7 +81,7 @@ const CSVUploader = () => {
         </Tbody>
       </Table>
       <Button onClick={handleDownload} mt={4} leftIcon={<FaDownload />}>Download CSV</Button>
-    </div>
+    </Box>
   );
 };
 
