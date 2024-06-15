@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Box, Heading, Button, Input, Table, Thead, Tbody, Tr, Th, Td, IconButton, useToast } from '@chakra-ui/react';
+import { Box, Heading, Button, Input, Table, Thead, Tbody, Tr, Th, Td, IconButton, useToast, VStack } from '@chakra-ui/react';
 import { FaTrash, FaDownload } from 'react-icons/fa';
 import Papa from 'papaparse';
 
 const CSVUploader = () => {
   const [data, setData] = useState([]);
   const [headers, setHeaders] = useState([]);
+  const [isCSVLoaded, setIsCSVLoaded] = useState(false);
   const toast = useToast();
 
   const handleFileUpload = (event) => {
@@ -14,6 +15,7 @@ const CSVUploader = () => {
       complete: (result) => {
         setHeaders(result.data[0]);
         setData(result.data.slice(1));
+        setIsCSVLoaded(true);
         toast({
           title: "File uploaded successfully.",
           description: `Parsed ${result.data.length - 1} rows.`,
@@ -24,6 +26,12 @@ const CSVUploader = () => {
       },
       header: false,
     });
+  };
+
+  const handleCreateCSV = () => {
+    setHeaders(['Column 1', 'Column 2', 'Column 3']);
+    setData([['', '', '']]);
+    setIsCSVLoaded(true);
   };
 
   const handleAddRow = () => {
@@ -54,33 +62,41 @@ const CSVUploader = () => {
   return (
     <Box p={4} boxShadow="md" borderRadius="md" bg="white">
       <Heading as="h2" size="lg" mb={4}>CSV Upload and Edit Tool</Heading>
-      <Input type="file" accept=".csv" onChange={handleFileUpload} mb={4} />
-      <Button onClick={handleAddRow} mb={4}>Add Row</Button>
-      <Table variant="simple">
-        <Thead>
-          <Tr>
-            {headers.map((header, index) => (
-              <Th key={index}>{header}</Th>
-            ))}
-            <Th>Actions</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {data.map((row, rowIndex) => (
-            <Tr key={rowIndex}>
-              {row.map((cell, colIndex) => (
-                <Td key={colIndex}>
-                  <Input value={cell} onChange={(e) => handleCellChange(rowIndex, colIndex, e.target.value)} />
-                </Td>
+      {!isCSVLoaded ? (
+        <VStack spacing={4}>
+          <Button onClick={handleCreateCSV}>Create New CSV</Button>
+          <Input type="file" accept=".csv" onChange={handleFileUpload} />
+        </VStack>
+      ) : (
+        <>
+          <Button onClick={handleAddRow} mb={4}>Add Row</Button>
+          <Table variant="simple">
+            <Thead>
+              <Tr>
+                {headers.map((header, index) => (
+                  <Th key={index}>{header}</Th>
+                ))}
+                <Th>Actions</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {data.map((row, rowIndex) => (
+                <Tr key={rowIndex}>
+                  {row.map((cell, colIndex) => (
+                    <Td key={colIndex}>
+                      <Input value={cell} onChange={(e) => handleCellChange(rowIndex, colIndex, e.target.value)} />
+                    </Td>
+                  ))}
+                  <Td>
+                    <IconButton aria-label="Remove row" icon={<FaTrash />} onClick={() => handleRemoveRow(rowIndex)} />
+                  </Td>
+                </Tr>
               ))}
-              <Td>
-                <IconButton aria-label="Remove row" icon={<FaTrash />} onClick={() => handleRemoveRow(rowIndex)} />
-              </Td>
-            </Tr>
-          ))}
-        </Tbody>
-      </Table>
-      <Button onClick={handleDownload} mt={4} leftIcon={<FaDownload />}>Download CSV</Button>
+            </Tbody>
+          </Table>
+          <Button onClick={handleDownload} mt={4} leftIcon={<FaDownload />}>Download CSV</Button>
+        </>
+      )}
     </Box>
   );
 };
