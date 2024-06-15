@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Box, Heading, Button, Input, Table, Thead, Tbody, Tr, Th, Td, IconButton, useToast, VStack } from '@chakra-ui/react';
-import { FaTrash, FaDownload } from 'react-icons/fa';
+import { Box, Heading, Button, Input, Table, Thead, Tbody, Tr, Th, Td, IconButton, useToast, VStack, HStack } from '@chakra-ui/react';
+import { FaTrash, FaDownload, FaPlus, FaMinus } from 'react-icons/fa';
 import Papa from 'papaparse';
 
 const CSVUploader = () => {
@@ -48,6 +48,21 @@ const CSVUploader = () => {
     setData(newData);
   };
 
+  const handleAddColumn = () => {
+    const newHeaders = [...headers, `Column ${headers.length + 1}`];
+    const newData = data.map(row => [...row, '']);
+    setHeaders(newHeaders);
+    setData(newData);
+  };
+
+  const handleRemoveColumn = () => {
+    if (headers.length === 0) return;
+    const newHeaders = headers.slice(0, -1);
+    const newData = data.map(row => row.slice(0, -1));
+    setHeaders(newHeaders);
+    setData(newData);
+  };
+
   const handleDownload = () => {
     const csv = Papa.unparse([headers, ...data]);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -69,7 +84,11 @@ const CSVUploader = () => {
         </VStack>
       ) : (
         <>
-          <Button onClick={handleAddRow} mb={4}>Add Row</Button>
+          <HStack spacing={4} mb={4}>
+            <Button onClick={handleAddRow}>Add Row</Button>
+            <Button onClick={handleAddColumn} leftIcon={<FaPlus />}>Add Column</Button>
+            <Button onClick={handleRemoveColumn} leftIcon={<FaMinus />}>Remove Column</Button>
+          </HStack>
           <Table variant="simple">
             <Thead>
               <Tr>
